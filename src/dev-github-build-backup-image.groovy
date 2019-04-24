@@ -2,39 +2,38 @@
 
 // Globals
 def buildEnv = [
-			backupHostName: env.BACKUP_HOSTNAME,
-			credentialsId:  env.CREDENTIALS_ID,
-			dockerLabel:    env.DOCKER_LABEL,
-			githubImage:    env.GITHUB_IMAGE
+		credentialsId:  env.CREDENTIALS_ID,
+		dockerLabel:    env.DOCKER_LABEL,
+		githubImage:    env.GITHUB_IMAGE
 ]
 
 pipeline {
 	agent any
 
 	options {
-	  buildDiscarder( logRotator( numToKeepStr: '10',
-										artifactNumToKeepStr: '5'))
+		buildDiscarder( logRotator( numToKeepStr: '10',
+				artifactNumToKeepStr: '5'))
 		timeout(time: 1, unit: 'HOURS')
-		}
+	}
 
 	stages {
 
 		stage('Init github-backup image build') {
 			steps {
 				script {
-					echo "Docker Build Host: ${buildEnv['backupHostName']}"
+					echo "Docker Build Host: ${env.DOCKER_BUILD_HOST}"
 					echo "Docker Client Version: ${buildEnv['dockerLabel']}"
 
 					checkout changelog: false,
-					poll: false,
-					scm: [
-						$class: 'GitSCM',
-						branches: [[name: '*/stable']],
-						doGenerateSubmoduleConfigurations: false,
-						extensions: [],
-						submoduleCfg: [],
-						userRemoteConfigs: [[url: 'https://github.com/github/backup-utils.git']]
-					]
+							poll: false,
+							scm: [
+									$class: 'GitSCM',
+									branches: [[name: '*/stable']],
+									doGenerateSubmoduleConfigurations: false,
+									extensions: [],
+									submoduleCfg: [],
+									userRemoteConfigs: [[url: 'https://github.com/github/backup-utils.git']]
+							]
 				}
 			}
 		}
@@ -43,8 +42,11 @@ pipeline {
 			steps {
 				script {
 					docker.withTool(buildEnv['dockerLabel']) {
-						docker.withServer("tcp://${buildEnv['backupHostName']}:2376", buildEnv['credentialsId']) {
+						docker.withServer("tcp://${env.DOCKER_BUILD_HOST}:2376", env.DOCKER_BUILD_HOST.tokenize('.')[0]) {
 							buildImage = docker.build(buildEnv['githubImage'], "--build-arg http_proxy=${http_proxy} .")
+							docker.withRegistry("", buildEnv['credentialsId']) {
+								buildImage.push()
+							}
 						}
 					}
 				}
