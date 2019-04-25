@@ -4,7 +4,7 @@
 def buildEnv = [
       credentialsId:  env.CREDENTIALS_ID,
       dockerLabel:    env.DOCKER_LABEL,
-      githubImage:    env.GITHUB_IMAGE
+      dockerImage:    env.DOCKER_IMAGE
 ]
 
 pipeline {
@@ -43,7 +43,7 @@ pipeline {
         script {
           docker.withTool(buildEnv['dockerLabel']) {
             docker.withServer("tcp://${env.DOCKER_BUILD_HOST}:2376", env.DOCKER_BUILD_HOST.tokenize('.')[0]) {
-              buildImage = docker.build(buildEnv['githubImage'], "--build-arg http_proxy=${http_proxy} .")
+              buildImage = docker.build(buildEnv['dockerImage'], "--build-arg http_proxy=${http_proxy} .")
               docker.withRegistry("", buildEnv['credentialsId']) {
                 buildImage.push()
               }

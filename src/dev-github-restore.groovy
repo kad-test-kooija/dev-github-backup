@@ -6,7 +6,8 @@ def buildEnv = [
       dockerLabel:       env.DOCKER_LABEL,
       githubHostName:    env.GITHUB_HOSTNAME,
       githubRestoreHost: env.GITHUB_RESTOREHOST,
-      snapshotId:        env.SNAPSHOT_ID
+      snapshotId:        env.SNAPSHOT_ID,
+      dockerImage:       env.DOCKER_IMAGE
     ]
     
 node {
@@ -22,7 +23,7 @@ node {
             -e GHE_EXTRA_SSH_OPTS='-i /ghe-ssh/id_rsa -o StrictHostKeyChecking=no' \
             -v /var/appdata/github_backup:/github_backup \
             -v /var/appdata/github_backup/.ssh:/ghe-ssh \
-            sookad/github-backup:latest ghe-restore -f -c -s ${buildEnv['snapshotId']}
+            ${buildEnv['dockerImage']} ghe-restore -f -c -s ${buildEnv['snapshotId']}
            """
       }
     }

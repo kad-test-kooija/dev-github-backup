@@ -4,7 +4,8 @@ def buildEnv = [
       backupHostName: env.BACKUP_HOSTNAME,
       credentialsId:  env.CREDENTIALS_ID,
       dockerLabel:    env.DOCKER_LABEL,
-      githubHostName: env.GITHUB_HOSTNAME
+      githubHostName: env.GITHUB_HOSTNAME,
+      dockerImage:    env.DOCKER_IMAGE
     ]
     
 node {
@@ -22,7 +23,7 @@ node {
            -o UserKnownHostsFile=/ghe-ssh/known_hosts' \
            -v /var/appdata/github_backup:/github_backup \
            -v /var/appdata/github_backup/.ssh:/ghe-ssh \
-           sookad/github-backup:latest ghe-backup
+           ${buildEnv['dockerImage']} ghe-backup
            """
       }
     }
