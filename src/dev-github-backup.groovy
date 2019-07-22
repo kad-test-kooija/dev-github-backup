@@ -13,6 +13,7 @@ node {
     docker.withTool(buildEnv['dockerLabel']) {
       docker.withServer("tcp://${buildEnv['backupHostName']}:2376", "${buildEnv['credentialsId']}") {
         sh """
+           docker pull ${buildEnv['dockerImage']}; \
            docker run --rm  \
            -e GHE_HOSTNAME=${buildEnv['githubHostName']} \
            -e GHE_DATA_DIR=/github_backup \
