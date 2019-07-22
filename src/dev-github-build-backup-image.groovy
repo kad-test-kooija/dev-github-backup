@@ -43,7 +43,7 @@ pipeline {
         script {
           docker.withTool(buildEnv['dockerLabel']) {
             docker.withServer("tcp://${env.DOCKER_BUILD_HOST}:2376", env.DOCKER_BUILD_HOST.tokenize('.')[0]) {
-              buildImage = docker.build(buildEnv['dockerImage'], "--build-arg http_proxy=${http_proxy} .")
+              buildImage = docker.build(buildEnv['dockerImage'], " --no-cache --build-arg http_proxy=${http_proxy} .")
               docker.withRegistry("", buildEnv['credentialsId']) {
                 buildImage.push()
               }
